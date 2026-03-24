@@ -51,19 +51,45 @@ int main() {
     sd.addr.sin_port = htons(5001);
     sd.addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 
-    // 2. Setup PortAudio
+    // 2. Setup PortAudio — try all WO Mic variants (WASAPI=12, DirectSound=7, MME=2)
     Pa_Initialize();
-    PaStream *stream;
-    Pa_OpenDefaultStream(&stream, 1, 0, paFloat32, SAMPLE_RATE, 
-                         FRAMES_PER_BUFFER, recordCallback, &sd);
+    PaStream *stream = NULL;
 
-    std::cout << "[*] PortAudio Sender Active. Capturing Mic...\n";
+    int woDev[] = {12, 7, 2}; // WASAPI, DirectSound, MME
+    PaError err = paInvalidDevice;
+    int usedDev = -1;
+
+    for (int d : woDev) {
+        PaStreamParameters inputParams;
+        inputParams.device = d;
+        inputParams.channelCount = 1;
+        inputParams.sampleFormat = paFloat32;
+        inputParams.suggestedLatency = Pa_GetDeviceInfo(d)->defaultLowInputLatency;
+        inputParams.hostApiSpecificStreamInfo = NULL;
+
+        err = Pa_OpenStream(&stream, &inputParams, NULL, SAMPLE_RATE,
+                            FRAMES_PER_BUFFER, paClipOff, recordCallback, &sd);
+        if (err == paNoError) { usedDev = d; break; }
+        std::cout << "  [skip] ID " << d << " ("
+                  << Pa_GetDeviceInfo(d)->name << "): "
+                  << Pa_GetErrorText(err) << "\n";
+    }
+
+    if (err != paNoError) {
+        std::cout << "[ERROR] Could not open any WO Mic device. Is WO Mic connected?\n";
+        Pa_Terminate();
+        return 1;
+    }
+
+    std::cout << "[*] Sender Active. Capturing from: "
+              << Pa_GetDeviceInfo(usedDev)->name << " (ID " << usedDev << ")\n";
     Pa_StartStream(stream);
 
     std::cout << "Press Enter to stop...\n";
     std::cin.get();
 
     Pa_StopStream(stream);
+    Pa_CloseStream(stream);
     Pa_Terminate();
     return 0;
-}
+}

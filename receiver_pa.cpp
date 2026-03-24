@@ -5,16 +5,17 @@
 #include <queue>
 #include <mutex>
 #include <chrono>
+#include <fstream>
 
 #pragma comment(lib, "ws2_32.lib")
 
 #define SAMPLE_RATE (44100)
 #define FRAMES_PER_BUFFER (512)
-#define BUFFER_THRESHOLD 5 // How many packets to "wait" for before playing
+#define BUFFER_THRESHOLD 5
 
 struct AudioPacket {
     long long timestamp;
-    float frames[512]; // Matches FRAMES_PER_BUFFER
+    float frames[512];
 };
 
 struct ReceiverData {
@@ -34,22 +35,18 @@ static int playbackCallback(const void *inputBuffer, void *outputBuffer,
 
     std::lock_guard<std::mutex> lock(data->queueMutex);
 
-    // If we don't have enough packets yet, play silence to build the buffer
     if (data->audioQueue.size() < BUFFER_THRESHOLD && data->starting) {
         for(unsigned int i=0; i<framesPerBuffer; i++) out[i] = 0;
         return paContinue;
     }
 
-    data->starting = false; // Buffer is primed, start playing
+    data->starting = false;
 
     if (!data->audioQueue.empty()) {
         std::vector<float> topPacket = data->audioQueue.front();
-        for(unsigned int i=0; i<framesPerBuffer; i++) {
-            out[i] = topPacket[i];
-        }
+        for(unsigned int i=0; i<framesPerBuffer; i++) out[i] = topPacket[i];
         data->audioQueue.pop();
     } else {
-        // Underflow: fill with silence if network is too slow
         for(unsigned int i=0; i<framesPerBuffer; i++) out[i] = 0;
     }
 
@@ -70,37 +67,43 @@ int main() {
 
     Pa_Initialize();
     PaStream *stream;
-    Pa_OpenDefaultStream(&stream, 0, 1, paFloat32, SAMPLE_RATE, 
+    Pa_OpenDefaultStream(&stream, 0, 1, paFloat32, SAMPLE_RATE,
                          FRAMES_PER_BUFFER, playbackCallback, &rd);
     Pa_StartStream(stream);
 
-    std::cout << "[*] Jitter Buffer Active. Listening...\n";
+    // Open CSV log file
+    std::ofstream logFile("latency_log.csv");
+    logFile << "packet,latency_ms\n";
+    int packetCount = 0;
 
-    // Main loop: Constantly receive from network and push to queue
+    std::cout << "[*] Jitter Buffer Active. Listening...\n";
+    std::cout << "[*] Logging latency to latency_log.csv\n";
+
     while (true) {
         AudioPacket pkg;
         int bytesReceived = recv(rd.socket, (char*)&pkg, sizeof(AudioPacket), 0);
-        
+
         if (bytesReceived > 0) {
-            // 1. Get current arrival time
             auto now = std::chrono::high_resolution_clock::now();
             long long arrival_time = std::chrono::duration_cast<std::chrono::microseconds>(now.time_since_epoch()).count();
 
-            // 2. Calculate Latency (Arrival - Sent)
             double delay_ms = (arrival_time - pkg.timestamp) / 1000.0;
 
-            // 3. Print it (Clear the line so it doesn't flood the screen)
             std::cout << "\r[LATENCY] " << delay_ms << " ms    " << std::flush;
 
-            // 4. Push only the audio frames to the Jitter Buffer
+            // Log to CSV
+            packetCount++;
+            logFile << packetCount << "," << delay_ms << "\n";
+            logFile.flush();
+
             std::vector<float> audioData(pkg.frames, pkg.frames + 512);
             std::lock_guard<std::mutex> lock(rd.queueMutex);
             rd.audioQueue.push(audioData);
-            
-            // Prevent memory explosion if sender is too fast
-            if(rd.audioQueue.size() > 20) rd.audioQueue.pop(); 
+
+            if(rd.audioQueue.size() > 20) rd.audioQueue.pop();
         }
     }
 
+    logFile.close();
     return 0;
 }
