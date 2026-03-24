@@ -4,3 +4,6 @@
 *.a
 *.o
 *.obj
+build/
+.vscode/
+pa.tar.zst
