@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\merin\OneDrive\Desktop\AKSYN_AudioEngine\build\CMakeFiles\7acf5b466d26b3ea34541c3439c1294e\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{5BFB2F35-912E-3553-9CC9-1F581D2C26BD}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

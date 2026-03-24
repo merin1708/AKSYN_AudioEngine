@@ -1,0 +1,10 @@
+^C:\USERS\MERIN\ONEDRIVE\DESKTOP\AKSYN_AUDIOENGINE\BUILD\CMAKEFILES\7ACF5B466D26B3EA34541C3439C1294E\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine -BC:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build/AKSYN_AudioEngine.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

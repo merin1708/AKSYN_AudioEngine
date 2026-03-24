@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\Users\merin\OneDrive\Desktop\AKSYN_AudioEngine\node_b_receiver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\merin\OneDrive\Desktop\AKSYN_AudioEngine\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{220FAF8E-9CDF-3DAE-9A6C-A1C53B6AD87F}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

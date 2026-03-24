@@ -1,0 +1,4 @@
+C:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build/CMakeFiles/node_a_sender.dir
+C:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build/CMakeFiles/node_b_receiver.dir
+C:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build/CMakeFiles/ALL_BUILD.dir
+C:/Users/merin/OneDrive/Desktop/AKSYN_AudioEngine/build/CMakeFiles/ZERO_CHECK.dir
